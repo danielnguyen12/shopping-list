@@ -4,6 +4,24 @@ const itemList = document.getElementById('item-list');
 const clearBtn = document.getElementById('clear');
 const itemFilter = document.getElementById('filter');
 
+function displayItems() {
+  const itemsFromStorage = getItemsFromStorage();
+  itemsFromStorage.forEach(item => addItemToDOM(item));
+  checkState();
+}
+
+function getItemsFromStorage() {
+  let itemsFromStorage;
+
+  if (localStorage.getItem('items') === null) {
+    itemsFromStorage = [];
+  } else {
+    itemsFromStorage = JSON.parse(localStorage.getItem('items'));
+  }
+
+  return itemsFromStorage;
+}
+
 function onAddItemSubmit(e) {
   e.preventDefault();
 
@@ -33,42 +51,38 @@ function addItemToDOM(item) {
 }
 
 function addItemToStorage(item) {
-  let itemsFromStorage;
-
-  if (localStorage.getItem('items') === null) {
-    itemsFromStorage = [];
-  } else {
-    itemsFromStorage = JSON.parse(localStorage.getItem('items'));
-  }
+  const itemsFromStorage = getItemsFromStorage();
 
   itemsFromStorage.push(item);
 
   localStorage.setItem('items', JSON.stringify(itemsFromStorage));
 }
 
-function createButton(classes) {
-  const button = document.createElement('button');
-  button.className = classes;
-  const icon = createIcon('fa-solid fa-xmark');
-  button.appendChild(icon);
-  return button;
-}
-
-function createIcon(classes) {
-  const icon = document.createElement('i');
-  icon.className = classes;
-  return icon;
-}
-
-function removeItem(e) {
+function onClickItem(e) {
   if (e.target.parentNode.classList.contains('remove-item')) {
-    e.target.parentNode.parentNode.remove();
-    checkState();
+    removeItem(e.target.parentNode.parentNode);
   }
+}
+
+function removeItem(item) {
+  item.remove();
+  removeItemFromStorage(item.textContent);
+  checkState();
+}
+
+function removeItemFromStorage(item) {
+  let itemsFromStorage = getItemsFromStorage(item);
+
+  itemsFromStorage = itemsFromStorage.filter((i) => i !== item);
+
+  localStorage.setItem('items', JSON.stringify(itemsFromStorage));
 }
 
 function clearItems(e) {
   itemList.innerHTML = '';
+
+  localStorage.removeItem('items');
+
   checkState();
 }
 
@@ -86,6 +100,20 @@ function filterItems(e) {
   });
 }
 
+function createButton(classes) {
+  const button = document.createElement('button');
+  button.className = classes;
+  const icon = createIcon('fa-solid fa-xmark');
+  button.appendChild(icon);
+  return button;
+}
+
+function createIcon(classes) {
+  const icon = document.createElement('i');
+  icon.className = classes;
+  return icon;
+}
+
 function checkState() {
   const items = itemList.querySelectorAll('li');
   if (items.length === 0) {
@@ -97,10 +125,15 @@ function checkState() {
   }
 }
 
-// Event Listeners
-itemForm.addEventListener('submit', onAddItemSubmit);
-itemList.addEventListener('click', removeItem);
-clearBtn.addEventListener('click', clearItems);
-itemFilter.addEventListener('input', filterItems);
+function init() {
+  // Event Listeners
+  itemForm.addEventListener('submit', onAddItemSubmit);
+  itemList.addEventListener('click', onClickItem);
+  clearBtn.addEventListener('click', clearItems);
+  itemFilter.addEventListener('input', filterItems);
+  displayItems();
 
-checkState();
+  checkState();
+}
+
+init();
