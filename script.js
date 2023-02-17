@@ -53,6 +53,20 @@ function clearItems(e) {
   checkState();
 }
 
+function filterItems(e) {
+  const text = e.target.value.toLowerCase();
+  const items = itemList.querySelectorAll('li');
+
+  items.forEach(item => {
+    const itemName = item.firstChild.textContent.toLowerCase();
+    if (itemName.includes(text)) {
+      item.style.display = 'flex';
+    } else {
+      item.style.display = 'none';
+    }
+  });
+}
+
 function checkState() {
   const items = itemList.querySelectorAll('li');
   if (items.length === 0) {
@@ -68,5 +82,6 @@ function checkState() {
 itemForm.addEventListener('submit', addItem);
 itemList.addEventListener('click', removeItem);
 clearBtn.addEventListener('click', clearItems);
+itemFilter.addEventListener('input', filterItems);
 
 checkState();
